@@ -35,11 +35,6 @@
 
 ### 查询指令
 - `/查询` - 立即查询服务器当前状态（附带一言句子）
-- `/服务器详情` - 获取服务器详细信息
-
-### 兼容性指令（旧版）
-- `/start_hello` - 等同于 `/start_server_monitor`
-- `/stop_hello` - 等同于 `/stop_server_monitor`
 
 ## 监控逻辑
 

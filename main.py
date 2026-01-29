@@ -511,59 +511,6 @@ class MyPlugin(Star):
         logger.info("监控状态缓存已重置")
         yield event.plain_result("✅ 监控状态缓存已重置，下次检测将视为首次检测")
     
-    # 服务器详细信息指令
-    @filter.command("服务器详情")
-    async def get_server_details(self, event: AstrMessageEvent):
-        """获取服务器详细信息"""
-        server_data = await self._fetch_server_data()
-        
-        if server_data is None:
-            yield event.plain_result("❌ 获取服务器信息失败，请检查服务器地址和网络连接")
-            return
-        
-        # 构建详细消息
-        status_emoji = "🟢" if server_data['status'] == "online" else "🔴"
-        message = f"{status_emoji} 服务器详细信息\n"
-        message += "════════════════════════\n"
-        message += f"🏷️ 名称: {server_data.get('name', '未知')}\n"
-        message += f"🔌 状态: {'在线' if server_data['status'] == 'online' else '离线'}\n"
-        message += f"🎮 版本: {server_data.get('version', '未知')}\n"
-        message += f"📊 协议: {server_data.get('protocol', '未知')}\n"
-        message += f"👥 玩家: {server_data.get('online', 0)}/{server_data.get('max', 0)}\n"
-        message += f"🛠️ 软件: {server_data.get('software', '未知')}\n"
-        message += f"🗺️ 地图: {server_data.get('map', '未知')}\n"
-        message += f"🆔 ID: {server_data.get('id', '未知')}\n"
-        message += f"🔧 类型: {'基岩版' if self.server_type == 'bedrock' else 'Java版'}\n"
-        
-        # MOTD信息
-        motd = server_data.get('motd', '')
-        if motd:
-            message += f"📝 MOTD: {motd}\n"
-        
-        # 玩家列表
-        if server_data.get('online', 0) > 0:
-            player_names = self._extract_player_names(server_data.get('players', []))
-            if player_names:
-                message += f"📋 玩家列表: {', '.join(player_names)}\n"
-        
-        message += f"🕒 更新时间: {server_data.get('update_time', '未知')}\n"
-        message += "════════════════════════"
-        
-        yield event.plain_result(message)
-    
-    # 兼容旧版指令名称
-    @filter.command("start_hello")
-    async def start_hello_task(self, event: AstrMessageEvent):
-        """启动定时发送任务（兼容旧版）"""
-        async for result in self.start_server_monitor_task(event):
-            yield result
-    
-    @filter.command("stop_hello")
-    async def stop_hello_task(self, event: AstrMessageEvent):
-        """停止定时发送任务（兼容旧版）"""
-        async for result in self.stop_server_monitor_task(event):
-            yield result
-
     async def terminate(self):
         """插件销毁方法"""
         # 停止定时任务
