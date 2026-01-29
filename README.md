@@ -28,9 +28,6 @@
 
 ## 可用指令
 
-### 基础指令
-- `/helloworld` - 测试指令，返回问候消息
-
 ### 监控控制指令
 - `/start_server_monitor` - 启动定时监控任务
 - `/stop_server_monitor` - 停止监控任务
@@ -38,16 +35,6 @@
 
 ### 查询指令
 - `/查询` - 立即查询服务器当前状态（附带一言句子）
-
-### 配置指令
-- `/set_group <群号>` - 动态设置目标群号
-
-### 测试指令
-- `/test_send` - 测试发送服务器信息到目标群
-
-### 兼容性指令（旧版）
-- `/start_hello` - 等同于 `/start_server_monitor`
-- `/stop_hello` - 等同于 `/stop_server_monitor`
 
 ## 监控逻辑
 
@@ -122,9 +109,6 @@ data/plugins/服务器查询/
 
 方式二：手动在群内发送 `/start_server_monitor` 指令启动
 
-### 4. 测试
-使用 `/查询` 或 `/test_send` 测试插件功能是否正常
-
 ## API说明
 
 ### mcstatus.io API
@@ -178,10 +162,10 @@ A: 检查配置文件中 `target_group`、`server_ip`、`server_port` 是否都�
 A: 使用 `/reset_monitor` 指令重置状态缓存。
 
 **Q: 消息没有发送到群里？**  
-A: 使用 `/test_send` 测试，检查群号是否正确，机器人是否有发送权限。
+A: 检查群号是否正确配置在WebUI配置页面，机器人是否有发送权限。
 
 **Q: 如何更改监控的群？**  
-A: 使用 `/set_group <群号>` 指令动态修改，或在WebUI配置页面修改。
+A: 在WebUI配置页面修改 `target_group` 参数后重启插件。
 
 ## 更新日志
 
