@@ -22,12 +22,12 @@
 | 配置项 | 说明 | 类型 | 默认值 | 必填 |
 |--------|------|------|--------|------|
 | `target_group` | QQ群号 | 字符串/数字 | 无 | ✅ |
-| `server_name` | 服务器名称 | 字符串 | "Minecraft服务器" | ❌ |
+| `server_name` | 服务器名称 | 字符串 | Minecraft服务器 | ❌ |
 | `server_ip` | 服务器IP地址 | 字符串 | 无 | ✅ |
-| `server_port` | 服务器端口 | 数字 | 无 | ✅ |
-| `server_type` | 服务器类型 | 字符串 | "bedrock" | ❌ |
+| `server_port` | 服务器端口 | 数字 | 25565 | ✅ |
+| `server_type` | 服务器类型 | 字符串 | "java" | ❌ |
 | `api_base_url` | 自定义状态API基础地址（主接口失败时作为回退） | 字符串 | `https://api.mcstatus.io/v2/status/` | ❌ |
-| `check_interval` | 监控检查间隔（秒） | 数字 | 10 | ❌ |
+| `check_interval` | 监控检查间隔（秒） | 数字 | 60 | ❌ |
 | `enable_auto_monitor` | 插件加载时自动启动监控 | 布尔值 | false | ❌ |
 
 ⚠️ **重要提示**：`target_group`、`server_ip`、`server_port` 为必填项，如果缺少这些配置，自动监控功能将不会启动。

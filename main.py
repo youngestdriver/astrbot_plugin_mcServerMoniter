@@ -67,6 +67,16 @@ class MyPlugin(Star):
             self.task = asyncio.create_task(self.direct_hello_task())
             logger.info("🚀 自动启动服务器监控任务")
 
+    def _extract_player_name(self, player):
+        """从玩家条目中提取玩家名称。"""
+        if isinstance(player, dict):
+            name = player.get("name_clean") or player.get("name") or player.get("username")
+            return str(name) if name not in (None, "") else ""
+
+        if player not in (None, ""):
+            return str(player)
+        return ""
+
     def _extract_player_names(self, player_list):
         """
         从玩家列表中提取玩家名称列表
@@ -82,12 +92,8 @@ class MyPlugin(Star):
         
         player_names = []
         for player in player_list:
-            if isinstance(player, dict):
-                # 提取玩家名
-                name = player.get("name_clean") or player.get("name") or player.get("username") or "未知玩家"
-                player_names.append(str(name))
-            else:
-                player_names.append(str(player))
+            name = self._extract_player_name(player) or "未知玩家"
+            player_names.append(name)
         return player_names
 
     def _is_fake_player_name(self, player_name):
@@ -95,22 +101,22 @@ class MyPlugin(Star):
         normalized_name = str(player_name).strip().lower()
         return normalized_name == "anonymous player" or normalized_name.startswith("anonymous player ")
 
+    def _is_fake_player(self, player):
+        """判断玩家条目是否为假人。"""
+        return self._is_fake_player_name(self._extract_player_name(player))
+
+    def _filter_real_players(self, player_list):
+        """过滤出真人玩家列表。"""
+        if not player_list or not isinstance(player_list, list):
+            return []
+        return [player for player in player_list if not self._is_fake_player(player)]
+
     def _count_fake_players(self, player_list):
         """统计玩家列表中的假人数。"""
         if not player_list or not isinstance(player_list, list):
             return 0
 
-        fake_player_count = 0
-        for player in player_list:
-            if isinstance(player, dict):
-                player_name = player.get("name_clean") or player.get("name") or player.get("username") or ""
-            else:
-                player_name = player
-
-            if self._is_fake_player_name(player_name):
-                fake_player_count += 1
-
-        return fake_player_count
+        return sum(1 for player in player_list if self._is_fake_player(player))
 
     def _extract_player_id(self, player):
         """从玩家数据中提取稳定唯一标识，优先使用官方 ID 字段"""
@@ -305,15 +311,26 @@ class MyPlugin(Star):
         # 获取玩家信息
         players_info = data.get('players', {})
         if isinstance(players_info, dict):
-            online_players = players_info.get('online', 0)
+            total_online_players = players_info.get('online', 0)
             max_players = players_info.get('max', 0)
             
             # 玩家列表
             player_list = players_info.get('list', [])
         else:
-            online_players = 0
+            total_online_players = 0
             max_players = 0
             player_list = []
+
+        fake_player_count = self._count_fake_players(player_list)
+        real_player_list = self._filter_real_players(player_list)
+
+        try:
+            total_online_players = int(total_online_players)
+        except (TypeError, ValueError):
+            total_online_players = 0
+
+        # 优先使用总人数-假人数，兜底使用真人列表长度，避免空列表导致计数异常
+        real_online_players = max(total_online_players - fake_player_count, len(real_player_list), 0)
         
         # 获取服务器GUID/ID
         server_id = data.get('id', '未知')
@@ -337,9 +354,11 @@ class MyPlugin(Star):
             'status': server_status,
             'name': server_name,
             'version': version,
-            'online': online_players,
+            'online': real_online_players,
+            'total_online': total_online_players,
+            'fake_online': fake_player_count,
             'max': max_players,
-            'players': player_list,
+            'players': real_player_list,
             'motd': motd_clean,
             'protocol': protocol,
             'id': server_id,
@@ -369,12 +388,16 @@ class MyPlugin(Star):
         online_players = server_data['online']
         max_players = server_data['max']
         player_list = server_data['players']
+        fake_player_count = server_data.get('fake_online')
         motd = server_data.get('motd', '')
         protocol = server_data.get('protocol')
         server_id = server_data.get('id')
         server_software = server_data.get('software')
         server_map = server_data.get('map')
         update_time = server_data.get('update_time', '未知')
+
+        if fake_player_count is None:
+            fake_player_count = self._count_fake_players(player_list)
         
         # 构建消息
         status_emoji = "🟢" if server_status == "online" else "🔴"
@@ -392,7 +415,6 @@ class MyPlugin(Star):
             message += f"🛠️ 软件: {server_software}\n"
 
         message += f"👥 在线玩家: {online_players}/{max_players}"
-        fake_player_count = self._count_fake_players(player_list)
         message += f"\n🤖 在线假人: {fake_player_count}"
 
         # 处理玩家列表
@@ -409,7 +431,7 @@ class MyPlugin(Star):
                 # 如果有玩家在线但无法获取列表，显示提示信息
                 message += f"\n📋 当前有 {online_players} 名玩家在线"
         else:
-            message += "\n📋 当前无玩家在线"
+            message += "\n📋 当前无真人玩家在线"
         
         # 添加服务器地图
         if server_map and server_map != '未知':

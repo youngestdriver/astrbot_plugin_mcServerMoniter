@@ -1,7 +1,7 @@
 name: astrbot_plugin_minecraft_watcher # 这是你的插件的唯一识别名。
 display_name: Minecraft服务器监控 # 插件的显示名称，可以包含空格和特殊字符。
 desc: Minecraft服务器监控插件，支持定时检测服务器状态变化并发送通知。可配置目标群、api地址、服务器地址、检查间隔等。 # 插件简短描述
-version: v1.1 # 插件版本号。格式：v1.1.1 或者 v1.1
+version: v1.2 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: youngestdriver # 作者
 repo: https://github.com/youngestdriver/astrbot_plugin_mcServerMoniter # 插件的仓库地址
 support_plataforms: 
